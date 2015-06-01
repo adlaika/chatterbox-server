@@ -12,6 +12,8 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var fs = require('fs');
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -39,7 +41,7 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "text/plain";
+  headers['Content-Type'] = "application/json";
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -52,7 +54,45 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+
+
+
+  // if (request.method === 'GET') {
+  //   if (request.url === '/messages') {
+  //     fs.readFile('./messages.json', function (err, data) {
+  //       if (err) throw err;
+  //       console.log(data);
+  //       response.end(data);
+  //     });
+  //   }
+  // } else if (request.method === 'POST') {
+  //   fs.appendFile("./messages.json", request.data);
+  // }
+
+  console.log(request.method);
+
+  if(request.method === 'OPTIONS') {
+    //console.log('called');
+    response.end();
+  } else if (request.method === 'GET') {
+    var testMessage = {
+      results : [
+        {
+          createdAt: "2015-06-01T22:38:38.980Z",
+          objectId: "R0CzyemOX9",
+          text: "YAAAAAAAy",
+          updatedAt: "2015-06-01T22:38:38.980Z",
+          username: "Arect"
+        }
+      ],
+    };
+    response.end(JSON.stringify(testMessage));
+  } else if (request.method === 'POST') {
+    var obj = {createdAt: new Date(), objectId: "22"};
+    response.end(JSON.stringify(obj));
+  }
+
+  //response.end("{'hello' : 'world'}");
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -70,4 +110,6 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+exports.requestHandler = requestHandler;
 

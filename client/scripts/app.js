@@ -16,7 +16,7 @@ app.fetch = function() {
     type: 'GET',
     contentType: 'application/json',
     success: function (data) {
-      console.log(data);
+      console.log(data)
       app.populateMessages(data.results, app.lastUpdate);
       app.addRooms();
       $('.message-container-title').text("All Messages");

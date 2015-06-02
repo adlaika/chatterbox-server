@@ -17,7 +17,12 @@ var url = require( "url" );
 var queryString = require( "querystring" );
 
 var messages = {
-  'results': []
+  'firstRoom' : [
+                 {  'username': 'TESTMAN',
+                    'text': 'lorem ipsum doucheum',
+                    'roomname': 'KNEE DEEP IN THE DEAD',
+                    'createdAt': '0'}
+                ]
 };
 
 var requestHandler = function(request, response) {
@@ -49,6 +54,8 @@ var requestHandler = function(request, response) {
 
 
   var getMessages = function() {
+    // console.log(url.parse(request.url))
+    var results = [];
     if(request.url === '/classes/messages') {
       // fs.readFile('messages.json', function read(err, data) {
       //   if (err) {
@@ -65,32 +72,38 @@ var requestHandler = function(request, response) {
       //   }
       // });
       response.writeHead('200', headers);
-      response.end(JSON.stringify(messages));
-    } else {
-      response.writeHead(404, {'Content-Type': 'text/html'});
-      response.write('<!doctype html><html><head><title>404</title></head><body>404: Resource Not Found</body></html>');
-      response.end();
+      for(var room in messages) {
+        for(var i = 0; i < messages[room].length; i++) {
+          results.push(messages[room][i]);
+        }
+      }
+      response.end(JSON.stringify({'results': results}));
     }
+    // else {
+    //   response.writeHead(404, {'Content-Type': 'text/html'});
+    //   // response.write('<!doctype html><html><head><title>404</title></head><body>404: Resource Not Found</body></html>');
+    //   response.end();
+    // }
   };
 
-var postMessage = function() {
+  var postMessage = function() {
+    if(!messages[request.url]) {
+      messages[request.url] = [];
+    }
 
-  if(request.url === '/classes/messages') {
-
-    var message = "";
-
+    var messageString = "";
     request.on('data', function(data) {
-      message += data;
+      messageString += data;
     });
 
     request.on('end', function(){
-      messages.results.splice(0, 0, JSON.parse(message));
-      response.writeHead('201', headers);
+      var message = JSON.parse(messageString);
+      message.createdAt = new Date();
+      messages[request.url].unshift(message);
+      response.writeHead(201, headers);
       response.end(JSON.stringify(messages));
     });
-
   }
-}
 
 
 
@@ -121,6 +134,7 @@ var postMessage = function() {
   // }
 
   if(request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
     response.end();
   } else if (request.method === 'GET') {
     getMessages();

@@ -31,21 +31,44 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  // The outgoing status.
-  var statusCode = 200;
-
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
-
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
+
+  // See the note below about CORS headers.
+  var headers = defaultCorsHeaders;
+
   headers['Content-Type'] = "application/json";
+
+
+  var getMessages = function() {
+    if(request.url === '/classes/messages') {
+      fs.readFile('messages.json', function read(err, data) {
+        if (err) {
+          throw err;
+        } else {
+          var messages = JSON.parse(data);
+          var results = [];
+          for(var key in messages) {
+            results.push(data[key]);
+          }
+          response.writeHead('200', headers);
+          response.end(JSON.stringify({'results': results}));
+        }
+      });
+    } else {
+      response.writeHead(404, {'Content-Type': 'text/html'});
+      response.write('<!doctype html><html><head><title>404</title></head><body>404: Resource Not Found</body></html>');
+      response.end();
+    }
+  };
+
+
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  // response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -72,22 +95,15 @@ var requestHandler = function(request, response) {
   console.log(request.method);
 
   if(request.method === 'OPTIONS') {
-    //console.log('called');
     response.end();
   } else if (request.method === 'GET') {
-    var testMessage = {
-      results : [
-        {
-          createdAt: "2015-06-01T22:38:38.980Z",
-          objectId: "R0CzyemOX9",
-          text: "YAAAAAAAy",
-          updatedAt: "2015-06-01T22:38:38.980Z",
-          username: "Arect"
-        }
-      ],
-    };
-    response.end(JSON.stringify(testMessage));
+    getMessages();
   } else if (request.method === 'POST') {
+    if(request.url === '/classes/messages') {
+      response.writeHead('201', headers);
+      response.end();
+    }
+    //Read file, parse it, append data to array, serialize, replace file content.
     var obj = {createdAt: new Date(), objectId: "22"};
     response.end(JSON.stringify(obj));
   }

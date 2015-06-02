@@ -12,7 +12,7 @@ app.init = function() {
 
 app.fetch = function() {
   $.ajax({
-    url: app.server,
+    url: app.server + '/classes/messages',
     type: 'GET',
     contentType: 'application/json',
     success: function (data) {

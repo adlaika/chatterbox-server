@@ -18,10 +18,12 @@ var queryString = require( "querystring" );
 
 var messages = {
   'firstRoom' : [
-                 {  'username': 'TESTMAN',
+                  {
+                    'username': 'TESTMAN',
                     'text': 'lorem ipsum doucheum',
                     'roomname': 'KNEE DEEP IN THE DEAD',
-                    'createdAt': '0'}
+                    'createdAt': 'Tue Jun 02 2015 11:39:12 GMT-0700 (PDT)'
+                  }
                 ]
 };
 

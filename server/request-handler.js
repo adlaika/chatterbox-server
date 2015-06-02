@@ -13,6 +13,12 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 var fs = require('fs');
+var url = require( "url" );
+var queryString = require( "querystring" );
+
+var messages = {
+  'results': []
+};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -44,25 +50,47 @@ var requestHandler = function(request, response) {
 
   var getMessages = function() {
     if(request.url === '/classes/messages') {
-      fs.readFile('messages.json', function read(err, data) {
-        if (err) {
-          throw err;
-        } else {
-          var messages = JSON.parse(data);
-          var results = [];
-          for(var key in messages) {
-            results.push(data[key]);
-          }
-          response.writeHead('200', headers);
-          response.end(JSON.stringify({'results': results}));
-        }
-      });
+      // fs.readFile('messages.json', function read(err, data) {
+      //   if (err) {
+      //     throw err;
+      //   } else {
+      //     console.log('getMessages log:' + data);
+      //     var messages = JSON.parse(data);
+      //     var results = [];
+      //     for(var key in messages) {
+      //       results.push(data[key]);
+      //     }
+      //     response.writeHead('200', headers);
+      //     response.end(JSON.stringify({'results': results}));
+      //   }
+      // });
+      response.writeHead('200', headers);
+      response.end(JSON.stringify(messages));
     } else {
       response.writeHead(404, {'Content-Type': 'text/html'});
       response.write('<!doctype html><html><head><title>404</title></head><body>404: Resource Not Found</body></html>');
       response.end();
     }
   };
+
+var postMessage = function() {
+
+  if(request.url === '/classes/messages') {
+
+    var message = "";
+
+    request.on('data', function(data) {
+      message += data;
+    });
+
+    request.on('end', function(){
+      messages.results.splice(0, 0, JSON.parse(message));
+      response.writeHead('201', headers);
+      response.end(JSON.stringify(messages));
+    });
+
+  }
+}
 
 
 
@@ -92,23 +120,13 @@ var requestHandler = function(request, response) {
   //   fs.appendFile("./messages.json", request.data);
   // }
 
-  console.log(request.method);
-
   if(request.method === 'OPTIONS') {
     response.end();
   } else if (request.method === 'GET') {
     getMessages();
   } else if (request.method === 'POST') {
-    if(request.url === '/classes/messages') {
-      response.writeHead('201', headers);
-      response.end();
-    }
-    //Read file, parse it, append data to array, serialize, replace file content.
-    var obj = {createdAt: new Date(), objectId: "22"};
-    response.end(JSON.stringify(obj));
+    postMessage();
   }
-
-  //response.end("{'hello' : 'world'}");
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
